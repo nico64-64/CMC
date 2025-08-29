@@ -1,6 +1,6 @@
 #include "cmc.h"
 
-//Les fonctions de ce fichier sont extraites du projet "Minesweeper".
+//Plusieurs fonctions de ce fichier sont extraites du projet "Minesweeper".
 
 
 void tronquer (char txt[])
@@ -13,7 +13,7 @@ void tronquer (char txt[])
 }
 
 
-char* enleve_majuscule (char string[])
+char* enlever_majuscule (char string[])
 //Remplace chaque majuscule de la string reçue en paramètre par la minuscule correspondante.
 //Renvoie la string sans majuscules.
 //Équivalent de strlwr().
@@ -22,6 +22,28 @@ char* enleve_majuscule (char string[])
 	{string[compteur] = tolower(string[compteur]);}
 	return string;
 }
+
+
+void simuler_mvm_souris ()
+//Ajoute un event de type SDL_MOUSEMOTION contenant les coordonnées du curseur à la queue des events.
+//Permet donc de connaître la position du curseur en créant artificiellement un "mouvement" de souris.
+{
+	SDL_Event dummy_ev;
+	int _xi = 0;
+	int _yi = 0;
+	
+	//Trouve les coordonnées actuelles de la souris:
+	SDL_GetMouseState(&_xi, &_yi);
+	
+	//Remplis l'event:
+	dummy_ev.type = SDL_MOUSEMOTION;
+	dummy_ev.motion.x = _xi;
+	dummy_ev.motion.y = _yi;
+	
+	//Ajoute l'event à la queue:
+	SDL_PushEvent(&dummy_ev);
+}
+
 
 int afficher_txt (char txt[], int x, int y, int longueur_max, TTF_Font* police, SDL_Color couleur, SDL_Renderer* renderer)
 //Affiche du texte dans une fenêtre.
@@ -150,6 +172,7 @@ void rectangle (int x, int y, int largeur, int hauteur, int epaisseur, SDL_Color
 		}
 	}
 }
+
 
 bool demander_txt (char titre_recu[], char explications[], char input[], int max, SDL_Window* fenetre_source)
 //Créé une nouvelle fenêtre de style "pop-up" pour demander un input de texte à l'utilisateur.
@@ -331,6 +354,7 @@ bool demander_txt (char titre_recu[], char explications[], char input[], int max
 	
 	return (bool) termine;
 }
+
 
 int demander_nbre (char titre_recu[], char explications[], int valeur_initiale, SDL_Window* fenetre_source)
 //Créé une nouvelle fenêtre de style "pop-up" pour demander un nombre à l'utilisateur

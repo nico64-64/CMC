@@ -6,7 +6,8 @@
 #include <SDL2/SDL_image.h>
 
 
-#define VERSION "0.0.1"
+#define VERSION "0.1" //numéro "officiel"
+#define NOM_VERSION "ROCS ACÉRÉS" //surnom amusant =)
 
 //Dimensions minimales de la fenêtre:
 #define LARGEUR_MIN	800 //largeur minimale de la fenêtre
@@ -59,6 +60,13 @@ enum zones
 	nouv_terminer,
 	nouv_mod_orientation,
 	nouv_mod_taille_police,
+};
+
+enum zones_menu
+{
+	//0 = indéterminé
+	creer = 1,
+	jouer
 };
 
 
@@ -136,16 +144,23 @@ SDL_Texture* symbole_modifier = NULL;
 SDL_Texture* symbole_taille_police = NULL;
 SDL_Texture* symbole_orientation = NULL;
 
+//Autres variables d'intérêt public:
+SDL_MessageBoxButtonData boutons_oui_non[2] =
+{
+	{SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Non"},
+	{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Oui"}
+};
+
 
 //Macro permettant de changer la couleur des formes dessinées avec SDL de manière plus simple et intelligente:
-#define SDL_SetColor(couleur, renderer)		SDL_SetRenderDrawColor(renderer, couleur.r, couleur.g, couleur.b, couleur.a)
+#define SDL_SetColor(couleur, renderer)									SDL_SetRenderDrawColor(renderer, couleur.r, couleur.g, couleur.b, couleur.a)
 
 //Macro permettant de dessiner un rectangle plein aux coins arrondis:
 #define rect_arrondi(x, y, largeur, hauteur, couleur, fond, renderer)	rectangle(x + 1, y + 1, largeur, hauteur, 0, couleur, fond, renderer); rectangle(x+2, y+2, largeur-2, hauteur-2, 5, couleur, fond, renderer)
 
 //Macros permettant de trouver la longueur d'une ligne de texte:
-#define longueur_txt(txt, longueur_max, police)					afficher_txt(txt, 0, 0, longueur_max, police, transparent, NULL)
-#define longueur_txt_centre(txt, x_gauche, x_droite, police)	afficher_txt_centre(txt, x_gauche, x_droite, 0, police, transparent, NULL)
+#define longueur_txt(txt, longueur_max, police)							afficher_txt(txt, 0, 0, longueur_max, police, transparent, NULL)
+#define longueur_txt_centre(txt, x_gauche, x_droite, police)			afficher_txt_centre(txt, x_gauche, x_droite, 0, police, transparent, NULL)
 
 
 //Liste des fonctions (en ordre alphabétique et classées par fichier):
@@ -162,3 +177,12 @@ void nouvelle_grille();
 bool sauvegarder_grille();
 //jeu.c:
 void rafraichir(enum zones zone);
+//backend.c:
+int afficher_txt(char txt[], int x, int y, int longueur_max, TTF_Font* police, SDL_Color couleur, SDL_Renderer* renderer);
+int afficher_txt_centre(char txt[], int x_gauche, int x_droite, int y, TTF_Font* police, SDL_Color couleur, SDL_Renderer* renderer);
+int demander_nbre(char titre_recu[], char explications[], int valeur_initiale, SDL_Window* fenetre_source);
+bool demander_txt(char titre_recu[], char explications[], char input[], int max, SDL_Window* fenetre_source);
+char* enlever_majuscule(char string[]);
+void rectangle(int x, int y, int largeur, int hauteur, int epaisseur, SDL_Color couleur, SDL_Color fond, SDL_Renderer* renderer);
+void simuler_mvm_souris();
+void tronquer(char txt[]);

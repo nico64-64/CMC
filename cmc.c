@@ -41,7 +41,7 @@ void gestion_arguments (char arg[])
 	}
 	
 	else if (!strcmp(arg, "-v") || !strcmp(arg, "--version"))
-	{printf("CMC\nCréateur de Mots Croisés\nVersion %s\n", VERSION); exit(0);}
+	{printf("CMC - Créateur de Mots Croisés\n---\nVersion %s \"%s\"\n", VERSION, NOM_VERSION); exit(0);}
 	
 	else
 	{erreur(11, "Argument non reconnu.\nEntrez \"./cmc --aide\" pour en savoir plus."); printf("\"%s\" n'est pas un argument accepté par ce programme.\n", arg);}
@@ -156,13 +156,79 @@ void init ()
 }
 
 
+void afficher_menu (enum zones_menu)
+//Affiche le menu principal dans la fenêtre de l'application.
+//Reçoit la position du curseur en paramètre.
+{
+	SDL_SetColor(fond, rend);
+	SDL_RenderClear(rend);
+	
+	//...
+	
+	SDL_RenderPresent(rend);
+}
+
+
 void menu ()
 //Gère le menu principal de l'application.
 {
-	//À faire!
+	SDL_Event ev;
+	int choix;
+		
+	SDL_MessageBoxData popup_quitter =
+	{
+		SDL_MESSAGEBOX_INFORMATION,
+		fenetre,
+		"CMC - Quitter?",
+		"Voulez-vous vraiment quitter l'application?",
+		2,
+		boutons_oui_non,
+		NULL
+	};
 	
-	//Temporaire:
-	nouvelle_grille();
+	
+	afficher_menu(0);
+	
+	while (1)
+	{
+		SDL_WaitEvent(&ev);
+		
+		switch (ev.type)
+		{
+		case SDL_QUIT:
+			quitter();
+			return;
+		
+		case SDL_WINDOWEVENT:
+			SDL_GetWindowSize(fenetre, &xmax, &ymax);
+			afficher_menu(0);
+			break;
+		
+		case SDL_KEYDOWN:
+			switch (ev.key.keysym.sym)
+			{
+			case SDLK_ESCAPE:
+				SDL_ShowMessageBox(&popup_quitter, &choix);
+				if (choix)
+				{quitter();}
+				break;
+			
+			//...
+			}
+			break;
+		
+		case SDL_MOUSEMOTION:
+			//...
+			break;
+		
+		case SDL_MOUSEBUTTONDOWN:
+			//...
+			//Temporaire:
+			nouvelle_grille();
+			afficher_menu(0);
+			break;
+		}
+	}
 }
 
 

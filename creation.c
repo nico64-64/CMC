@@ -8,11 +8,6 @@ void nouvelle_grille ()
 	int buffint = 0;
 	int choix = 0;
 	
-	SDL_MessageBoxButtonData boutons_oui_non[2] =
-	{
-		{SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Non"},
-		{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Oui"}
-	};
 	
 	SDL_MessageBoxData popup_tester =
 	{
@@ -50,7 +45,21 @@ void nouvelle_grille ()
 	
 	//Reset de la grille actuelle:
 	if (grille != NULL)
-	{free(grille); free(mots);}
+	{
+		for (int compteur = 0; compteur < nbre_cases; compteur++)
+		{free(grille[compteur]);}
+		free(grille);
+	}
+	if (mots != NULL)
+	{
+		while (mots->suiv != NULL)
+		{mots = mots->suiv;}
+		while (mots->prec != NULL)
+		{mots = mots->prec; free(mots->suiv);}
+		free(mots);
+	}
+	grille = NULL;
+	mots = NULL;
 	nbre_mots = 0;
 	selection_x = -1;
 	selection_y = -1;
@@ -77,6 +86,9 @@ void nouvelle_grille ()
 	}
 	
 	rafraichir(nouv_grille);
+	rafraichir(nouv_grille); //la 2e fois permet aux calculs pour les icones de se faire avec les bonnes données (sinon, les icones sont toutes en haut au début...)
+	simuler_mvm_souris(); //permet de trouver les coordonnées du curseur en simulant un SDL_MOUSEMOTION event
+	
 	while (1)
 	{
 		SDL_WaitEvent(&ev);
@@ -144,14 +156,8 @@ void nouvelle_grille ()
 			
 			case SDLK_RETURN:
 			case SDLK_KP_ENTER:
-				if (grille[selection_x][selection_y].vide)
-				{
-					if (orientation == HORIZONTAL && !grille[selection_x - 1][selection_y].vide)
-					{selection_x--;}
-					else if (orientation == VERTICAL && !grille[selection_x][selection_y - 1].vide)
-					{selection_y--;}
-				}
-				identifier_mot();
+				if (selection_x >= 0 && selection_y >= 0)
+				{identifier_mot();}
 				break;
 			
 			case SDLK_BACKSPACE:
@@ -213,6 +219,7 @@ void nouvelle_grille ()
 				{
 					grille[selection_x][selection_y].vide = false;
 					strcpy(grille[selection_x][selection_y].solution, ev.text.text);
+					enlever_majuscule(grille[selection_x][selection_y].solution); //transformation des majuscules en minuscules
 					
 					if (orientation == HORIZONTAL && selection_x < nbre_cases - 1)
 					{selection_x++;}
@@ -253,7 +260,7 @@ void nouvelle_grille ()
 			break;
 		
 		case SDL_MOUSEBUTTONDOWN:
-			if (ev.motion.x >= marge_gauche && ev.motion.x <= marge_gauche + largeur_grille && ev.motion.y >= 40 && ev.motion.y <= 40 + largeur_grille) //modifier le titre
+			if (ev.motion.x >= marge_gauche && ev.motion.x <= marge_gauche + largeur_grille && ev.motion.y >= 40 && ev.motion.y <= 40 + largeur_grille) //clic dans la grille
 			{
 				selection_x = focus_x;
 				selection_y = focus_y;
@@ -276,9 +283,7 @@ void nouvelle_grille ()
 				rafraichir(nouv_mod_orientation);
 			}
 			else if (ev.motion.x >= marge_gauche + 200 && ev.motion.x <= marge_gauche + 310 && ev.motion.y >= marge_bas && ev.motion.y <= marge_bas + 40) //identifier
-			{
-				identifier_mot();
-			}
+			{identifier_mot();}
 			else if (ev.motion.x >= marge_gauche + 330 && ev.motion.x <= marge_gauche + 380 && ev.motion.y >= marge_bas && ev.motion.y <= marge_bas + 40) //agrandir/rapetisser la police
 			{
 				buffint = demander_nbre("Modifier la taille de la police", \
@@ -294,7 +299,7 @@ void nouvelle_grille ()
 					police_nbre_grille = TTF_OpenFont(nom_police_principale, taille_police_nbre_grille);
 					rafraichir(nouv_grille);
 				}
-				else if (buffint != -6699) //signifie qu'aucun input n'a été pris, finalement; donc ce n'est (probablement) pas une erreur...
+				else if (buffint != -6699) //signifie qu'aucun input n'a été pris, finalement, donc ce n'est (probablement) pas une erreur...
 				{SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Valeur non acceptée", "La taille de police que vous avez spécifiée est invalide.\nVeuillez choisir un nombre positif plus petit que 70.", fenetre);}
 			}
 			else if (ev.motion.x >= marge_gauche + 400 && ev.motion.x <= marge_gauche + 510 && ev.motion.y >= marge_bas && ev.motion.y <= marge_bas + 40) //terminer
@@ -331,6 +336,7 @@ void identifier_mot ()
 	char buffer[300];
 	mot* buffer_mot = NULL;
 	int choix = 0;
+	bool flag_2e_mot = 0;
 	
 	SDL_MessageBoxButtonData boutons_effacer_mot[3] =
 	{
@@ -350,21 +356,60 @@ void identifier_mot ()
 		NULL
 	};
 	
+	if (grille[selection_x][selection_y].vide)
+	{
+		if (orientation == HORIZONTAL && selection_x > 0 && !grille[selection_x - 1][selection_y].vide)
+		{selection_x--;}
+		else if (orientation == VERTICAL && selection_y > 0 && !grille[selection_x][selection_y - 1].vide)
+		{selection_y--;}
+	}
+	
+	while (mots != NULL && mots->suiv != NULL)
+	{mots = mots->suiv;}
+	
 	if (selection_x >= 0 && selection_y >= 0)
 	{
+		//Case vide:
 		if (grille[selection_x][selection_y].vide)
 		{
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Case vide sélectionnée", "La case présentement sélectionnée est vide.\nVeuillez sélectionner la case de la première lettre du mot à identifier.", \
 				fenetre);
+			return;
 		}
 		
+		//Case non-vide sans caractère (erreur):
 		else if (grille[selection_x][selection_y].solution[0] == '\000')
-		{erreur(15, "Les données du programme semblent s'être corrompues: Vous avez sélectionné une case non-vide contenant une solution vide.");}
+		{erreur(15, "Les données du programme semblent s'être corrompues: Vous avez sélectionné une case non-vide contenant une solution vide."); return;}
 		
+		//Case déjà occupée par un mot:
 		else if (grille[selection_x][selection_y].essai[0] == 1)
 		{
-			SDL_ShowMessageBox(&popup_effacer_mot, &choix);
-			if (!choix)
+			while (mots->prec != NULL && !flag_2e_mot)
+			{
+				if (mots->orientation != orientation)
+				{
+					if (mots->orientation == HORIZONTAL && selection_x >= mots->x && selection_x <= mots->x + mots->nbre_car && selection_y == mots->y)
+					{flag_2e_mot = true;}
+					else if (mots->orientation == VERTICAL && selection_y >= mots->y && selection_y <= mots->y + mots->nbre_car && selection_x == mots->x)
+					{flag_2e_mot = true;}
+				}
+				mots = mots->prec;
+			}
+			if (mots->orientation != orientation)
+			{
+				if (mots->orientation == HORIZONTAL && selection_x >= mots->x && selection_x <= mots->x + mots->nbre_car && selection_y == mots->y)
+				{flag_2e_mot = true;}
+				else if (mots->orientation == VERTICAL && selection_y >= mots->y && selection_y <= mots->y + mots->nbre_car && selection_x == mots->x)
+				{flag_2e_mot = true;}
+			}
+			while (mots->suiv != NULL)
+			{mots = mots->suiv;}
+			
+			if (!flag_2e_mot)
+			{SDL_ShowMessageBox(&popup_effacer_mot, &choix);}
+			if (flag_2e_mot)
+			{/*On fait juste laisser le code couler...*/}
+			else if (!choix)
 			{return;}
 			else
 			{
@@ -405,18 +450,14 @@ void identifier_mot ()
 						{mots->suiv->prec = mots;}
 					}
 				}
+				rafraichir(nouv_grille);
+				nbre_mots--;
+				return;
 			}
 		}
 		
-		else if (orientation == HORIZONTAL)
+		if (orientation == HORIZONTAL)
 		{
-			//Retour à la fin de la liste (si nécessaire):
-			if (mots != NULL)
-			{
-				while (mots->suiv != NULL)
-				{mots = mots->suiv;}
-			}
-			
 			//Identification du 1er caractère du mot:
 			while (selection_x > 0 && grille[selection_x - 1][selection_y].vide != true)
 			{selection_x--;}
@@ -470,13 +511,6 @@ void identifier_mot ()
 		
 		else //orientation == VERTICAL
 		{
-			//Retour à la fin de la liste (si nécessaire):
-			if (mots != NULL)
-			{
-				while (mots->suiv != NULL)
-				{mots = mots->suiv;}
-			}
-			
 			//Identification du 1er caractère du mot:
 			while (selection_y > 0 && grille[selection_x][selection_y - 1].vide != true)
 			{selection_y--;}
@@ -524,12 +558,13 @@ void identifier_mot ()
 			{
 				//Marquage des cases:
 				for (int compteur = 0; compteur < mots->nbre_car; compteur++)
-				{grille[mots->x + compteur][mots->y].essai[0] = 1;} //Je met essai = 1 pour marquer la case comme faisant mtn partie d'un mot
+				{grille[mots->x][mots->y + compteur].essai[0] = 1;} //Je met essai = 1 pour marquer la case comme faisant mtn partie d'un mot
 			}
 		}
 		
 		//Affichage:
 		rafraichir(nouv_grille);
+		nbre_mots++;
 	}
 	else
 	{SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Aucune case sélectionnée", "Veuillez sélectionner (dans la grille) la case de la première lettre du mot à identifier.", fenetre);}
@@ -589,13 +624,23 @@ bool sauvegarder_grille ()
 	fprintf(fsauv, "Dimensions: %d  # nombre de cases (les grilles sont toujours carrées)\n", nbre_cases);
 	fprintf(fsauv, "Nombre de mots: %d\n\n", nbre_mots);
 	
-	fprintf(fsauv, "Légende: [ À VENIR! ]\n\n");
+	fprintf(fsauv, "Légende:\n");
+	fprintf(fsauv, "# Syntaxe pour un mot: [ mot, x (position horizontale), y (position verticale), orientation (0/1 = Horizontal/Vertical), nombre de caractères (nombre de cases occupées), légende (description du mot) ]\n");
+	fprintf(fsauv, "# La position du mot est celle de son premier caractère. Les valeurs de x et y vont de 0 au nombre de cases - 1.\n");
+	while (mots->prec != NULL)
+	{mots = mots->prec;}
+	while (mots->suiv != NULL)
+	{
+		fprintf(fsauv, "[ %s, %d, %d, %d, %d, %s ],\n", mots->mot, mots->x, mots->y, mots->orientation, mots->nbre_car, mots->legende);
+		mots = mots->suiv;
+	}
+	fprintf(fsauv, "[ %s, %d, %d, %d, %d, %s ]\n\n", mots->mot, mots->x, mots->y, mots->orientation, mots->nbre_car, mots->legende);
 	
 	fprintf(fsauv, "Grille:\n# Syntaxe pour une case: [ vide (0/1), solution (caractère) ]\n# Les cases doivent être disposées comme doit l'être la grille\n");
 	for (int a = 0; a < nbre_cases; a++)
 	{
 		for (int b = 0; b < nbre_cases; b++)
-		{fprintf(fsauv, "[ %d ,%s ] ", grille[a][b].vide, grille[a][b].solution);}
+		{fprintf(fsauv, "[ %d, %s ] ", grille[b][a].vide, grille[b][a].solution);}
 		fprintf(fsauv, "\n");
 	}
 	
