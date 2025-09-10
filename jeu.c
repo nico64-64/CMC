@@ -493,6 +493,8 @@ void verifier_mot ()
 //Vérifie si un mot entré dans la grille contient les bonnes lettres ou pas.
 //Modifier "delai_verification_mot" pour voir plus ou moins longtemps la validation.
 {	
+	int buff = 0; //corrige un bug très étrange du nombre de caratères qui change en cours de route... (voir plus bas)
+	
 	if (mots == NULL || grille == NULL)
 	{erreur(17, "Aucune grille ou légende n'a été chargée avant cette vérification.\nComment ça a pu arriver?!"); return;}
 	
@@ -513,6 +515,7 @@ void verifier_mot ()
 			if (mots->x != selection_x || mots->y != selection_y)
 			{erreur(16, "Aucun mot horizontal n'a été associé à cette zone non-vide de la grille.\nAvez-vous sélectionnée la bonne orientation?"); return;}
 			
+			buff = mots->nbre_car; //place le nombre de caractères dans un buffer, parce que sinon, ce nombre change... (POURQUOI?!! COMMENT?!!)
 			//Vérification du mot
 			for (int n = selection_x; n < selection_x + mots->nbre_car; n++)
 			{
@@ -526,6 +529,7 @@ void verifier_mot ()
 			rafraichir(verification);
 			SDL_Delay(delai_validation_mot);
 			
+			mots->nbre_car = buff; //reprend le nombre de caractères dans un buffer, parce que sinon, ce nombre change... (POURQUOI?!! COMMENT?!!)
 			//Retour à la normale:
 			for (int n = selection_x; n < selection_x + mots->nbre_car; n++)
 			{grille[n][selection_y].validation = 0;}
@@ -547,6 +551,7 @@ void verifier_mot ()
 			if (mots->x != selection_x || mots->y != selection_y)
 			{erreur(16, "Aucun mot vertical n'a été associé à cette zone non-vide de la grille.\nAvez-vous sélectionnée la bonne orientation?"); return;}
 			
+			buff = mots->nbre_car; //place le nombre de caractères dans un buffer, parce que sinon, ce nombre change... (POURQUOI?!! COMMENT?!!)
 			//Vérification du mot
 			for (int n = selection_y; n < selection_y + mots->nbre_car; n++)
 			{
@@ -560,6 +565,7 @@ void verifier_mot ()
 			rafraichir(verification);
 			SDL_Delay(delai_validation_mot);
 			
+			mots->nbre_car = buff; //reprend le nombre de caractères dans un buffer, parce que sinon, ce nombre change... (POURQUOI?!! COMMENT?!!)
 			//Retour à la normale:
 			for (int n = selection_y; n < selection_y + mots->nbre_car; n++)
 			{grille[selection_x][n].validation = 0;}
@@ -788,6 +794,9 @@ bool ouvrir_grille(char nom[])
 				
 				car = fgetc(fsauv);
 			}
+			
+			if (debogage)
+			{printf("%d entrées de légende lues.\n", compte_tours);}
 		}
 		
 		//Lecture et analyse de la grille:
