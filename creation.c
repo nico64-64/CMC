@@ -9,6 +9,17 @@ void nouvelle_grille ()
 	int choix = 0;
 	
 	
+	SDL_MessageBoxData popup_modifier =
+	{
+		SDL_MESSAGEBOX_INFORMATION,
+		fenetre,
+		"CMC - Modifier la grille",
+		"Le programme a détecté une grille déjà chargée. Voulez-vous la modifier?\nCliquez \"non\" pour créer une nouvelle grille.",
+		2,
+		boutons_oui_non,
+		NULL
+	};
+	
 	SDL_MessageBoxData popup_tester =
 	{
 		SDL_MESSAGEBOX_INFORMATION,
@@ -42,52 +53,44 @@ void nouvelle_grille ()
 		NULL
 	};
 	
+	//Demande si on veut modifier la grille (s'il y a lieu):
+	if (grille != NULL && mots != NULL)
+	{SDL_ShowMessageBox(&popup_modifier, &choix);}
 	
-	//Reset de la grille actuelle:
-	if (grille != NULL)
+	if (grille == NULL || mots == NULL || !choix)
 	{
-		for (int compteur = 0; compteur < nbre_cases; compteur++)
-		{free(grille[compteur]);}
-		free(grille);
-	}
-	if (mots != NULL)
-	{
-		while (mots->suiv != NULL)
-		{mots = mots->suiv;}
-		while (mots->prec != NULL)
-		{mots = mots->prec; free(mots->suiv);}
-		free(mots);
-	}
-	grille = NULL;
-	mots = NULL;
-	nbre_mots = 0;
-	selection_x = -1;
-	selection_y = -1;
-	orientation = HORIZONTAL;
-	
-	//Initialisation de la nouvelle grille:
-	grille = calloc(nbre_cases, sizeof(struct _case*));
-	if (grille == NULL)
-	{erreur(13, "Impossible d'allouer assez de mémoire pour créer une nouvelle grille de mots croisés.\nDétails techniques: calloc failed (1 de 2)"); return;}
-	
-	for (int compteur = 0; compteur < nbre_cases; compteur++)
-	{
-		grille[compteur] = calloc(nbre_cases, sizeof(struct _case));
-		if (grille[compteur] == NULL)
-		{erreur(13, "Impossible d'allouer assez de mémoire pour créer une nouvelle grille de mots croisés.\nDétails techniques: calloc failed (2 de 2, vérifier l'itération...)"); return;}
+		//Reset de la grille actuelle (devrait déjà être fait, mais au cas où...):
+		liberer_memoire();
 		
-		//Initialise à 0 les 3 variables de chaque case:
-		for (int c2 = 0; c2 < nbre_cases; c2++)
+		//Demande la taille de la nouvelle grille:
+		nbre_cases = demander_nbre("Taille de la grille", "Entrez la taille (nombre de cases par ligne/colonne) de la grille à créer.\nLes grilles doivent présentement toujours être carrées.\nCe nombre doit être supérieur à 0 et en choisir un trop élevé pourrait rendre la grille inutilisable.", nbre_cases, fenetre);
+		if (nbre_cases <= 0)
+		{erreur(21, "Nombre de cases invalide.\nLe nombre de cases reçu est inférieur ou égal à 0!\nLe programme utilisera la valeur par défaut (10) pour continuer."); nbre_cases = 10;}
+		
+		//Initialisation de la nouvelle grille:
+		grille = calloc(nbre_cases, sizeof(struct _case*));
+		if (grille == NULL)
+		{erreur(13, "Impossible d'allouer assez de mémoire pour créer une nouvelle grille de mots croisés.\nDétails techniques: calloc failed (1 de 2)"); return;}
+		
+		for (int compteur = 0; compteur < nbre_cases; compteur++)
 		{
-			grille[compteur][c2].vide = true;
-			grille[compteur][c2].solution[0] = 0;
-			grille[compteur][c2].essai[0] = 0;
+			grille[compteur] = calloc(nbre_cases, sizeof(struct _case));
+			if (grille[compteur] == NULL)
+			{erreur(13, "Impossible d'allouer assez de mémoire pour créer une nouvelle grille de mots croisés.\nDétails techniques: calloc failed (2 de 2, vérifier l'itération...)"); return;}
+			
+			//Initialise à 0 les 3 variables de chaque case:
+			for (int c2 = 0; c2 < nbre_cases; c2++)
+			{
+				grille[compteur][c2].vide = true;
+				grille[compteur][c2].solution[0] = 0;
+				grille[compteur][c2].essai[0] = 0;
+			}
 		}
 	}
 	
 	rafraichir(nouv_grille);
-	rafraichir(nouv_grille); //la 2e fois permet aux calculs pour les icones de se faire avec les bonnes données (sinon, les icones sont toutes en haut au début...)
 	simuler_mvm_souris(); //permet de trouver les coordonnées du curseur en simulant un SDL_MOUSEMOTION event
+	rafraichir(nouv_grille); //la 2e fois permet aux calculs pour les icones de se faire avec les bonnes données (sinon, les icones sont toutes en haut au début...)
 	
 	while (1)
 	{
@@ -272,7 +275,7 @@ void nouvelle_grille ()
 				selection_y = -1;
 				SDL_ShowMessageBox(&popup_quitter, &choix);
 				if (choix)
-				{return;}
+				{liberer_memoire(); return;}
 			}
 			else if (ev.motion.x >= marge_gauche + 130 && ev.motion.x <= marge_gauche + 180 && ev.motion.y >= marge_bas && ev.motion.y <= marge_bas + 40) //changer d'orientation
 			{
@@ -306,10 +309,12 @@ void nouvelle_grille ()
 			{
 				if (sauvegarder_grille())
 				{
-					selection_x = -1;
-					selection_y = -1;
-					
 					SDL_ShowMessageBox(&popup_tester, &choix);
+					
+					if (choix) //tester
+					{partie();}
+					else //ne pas tester
+					{liberer_memoire();}
 					return;
 				}
 			}
@@ -356,6 +361,15 @@ void identifier_mot ()
 		NULL
 	};
 	
+	
+	//Est-ce qu'une case est sélectionnnée?
+	if (selection_x == -1 || selection_y == -1)
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Aucune case sélectionnée", "Vous devez sélectionner une case contenant une des lettres du mot à identifier.\nAssurez-vous d'avoir la bonne orientation!", fenetre);
+		return;
+	}
+	
+	//Est-ce que la case est vide? Et si on revient en arrière d'une case?
 	if (grille[selection_x][selection_y].vide)
 	{
 		if (orientation == HORIZONTAL && selection_x > 0 && !grille[selection_x - 1][selection_y].vide)
@@ -364,9 +378,11 @@ void identifier_mot ()
 		{selection_y--;}
 	}
 	
+	//On revient au début de la liste des mots:
 	while (mots != NULL && mots->suiv != NULL)
 	{mots = mots->suiv;}
 	
+	//Une case est sélectionnée:
 	if (selection_x >= 0 && selection_y >= 0)
 	{
 		//Case vide:
@@ -384,7 +400,7 @@ void identifier_mot ()
 		//Case déjà occupée par un mot:
 		else if (grille[selection_x][selection_y].essai[0] == 1)
 		{
-			while (mots->prec != NULL && !flag_2e_mot)
+			while (mots->prec != NULL && !flag_2e_mot && !(mots->orientation == orientation && mots->x == selection_x && mots->y == selection_y))
 			{
 				if (mots->orientation != orientation)
 				{
@@ -402,6 +418,8 @@ void identifier_mot ()
 				else if (mots->orientation == VERTICAL && selection_y >= mots->y && selection_y <= mots->y + mots->nbre_car && selection_x == mots->x)
 				{flag_2e_mot = true;}
 			}
+			else if (flag_2e_mot)
+			{flag_2e_mot = 0;}
 			while (mots->suiv != NULL)
 			{mots = mots->suiv;}
 			
@@ -596,9 +614,22 @@ bool sauvegarder_grille ()
 	};
 	
 	
-	//Vérifions si on a quelque chose à enregistrer:
+	//Vérifions si on a quelque chose à enregistrer (ça devrait déjà être le cas, mais bon...):
 	if (grille == NULL || mots == NULL)
-	{erreur(14, "Le programme ne détecte aucune grille ou légende présentement active.\nQu'est-ce qui se passe?!"); return 0;}
+	{erreur(14, "Impossible d'enregistrer la grille:\nLe programme ne détecte aucune grille ou légende présentement active."); return 0;}
+	
+	//Vérifions qu'un mot a bel et bien été assigné à chaque case non-vide de la grille:
+	for (int a = 0; a < nbre_cases; a++)
+	{
+		for (int b = 0; b< nbre_cases; b++)
+		{
+			if (!grille[a][b].vide && grille[a][b].essai[0] != 1)
+			{
+				SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Grille incomplète", "Veuillez assigner une description (bouton \"identifier un mot\") à chaque mot de la grille avant d'essayer de l'enregistrer.", fenetre);
+				return 0;
+			}
+		}
+	}
 	
 	//Vérifions si on a un titre:
 	if (titre[0] == '\000')
@@ -643,6 +674,9 @@ bool sauvegarder_grille ()
 		{fprintf(fsauv, "[ %d, %s ] ", grille[b][a].vide, grille[b][a].solution);}
 		fprintf(fsauv, "\n");
 	}
+	
+	if (debogage)
+	{printf("Grille sauvegardée (fichier %s).\n", nom_fsauv);}
 	
 	//Fermons le fichier, et c'est terminé!
 	fclose(fsauv);

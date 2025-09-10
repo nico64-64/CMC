@@ -7,13 +7,8 @@ void erreur (int code, char msg[])
 //Les codes de 1 à 10 sont considérés fatal.
 //Les messages d'erreurs doivent contenir moins de 300 caractères et les codes d'erreur doivent être supérieurs à 0.
 {
-	char message[320];
-	
-	//Log dans le fichier d'erreurs:
-	if (errlog)
-	{
-		//À venir...
-	}
+	char message[320] = "";
+	FILE* ferreur;
 	
 	//Affiche un pop-up:
 	if (code < 100)
@@ -24,17 +19,35 @@ void erreur (int code, char msg[])
 		{sprintf(message, "Erreur %d.\n%s", code, msg);}
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "CMC - Erreur", message, fenetre);
 	}
+	
+	//Log dans le fichier d'erreurs:
+	if (errlog)
+	{
+		ferreur = fopen(nom_ferreur, "a+");
+		
+		if (code >= 100)
+		{sprintf(message, "Erreur %d.\n%s", code, msg);}
+		fprintf(ferreur, "\n%s\n", message);
+		if (code <= 10)
+		{fprintf(ferreur, "== ERREUR FATALE ==\nDémarrez le programme depuis un terminal avec l'option \"-d\" (\"-?\" pour plus d'informations) pour déboguer le programme.\nIl est conseillé de d'abord supprimer ce fichier.\n\n");}
+		
+		fclose(ferreur);
+	}
 }
 
 
 void gestion_arguments (char arg[])
 //Gère les arguments reçus par l'application à son ouverture.
 {
-	if (!strcmp(arg, "-?") || !strcmp(arg, "-a") || !strcmp(arg, "-h") || !strcmp(arg, "--aide"))
+	FILE* ferreur; //pour l'option de débogage
+	
+	
+	if (!strcmp(arg, "-?") || !strcmp(arg, "-a") || !strcmp(arg, "-h") || !strcmp(arg, "--aide") || !strcmp(arg, "--help"))
 	{
 		printf("CMC\nCréateur de Mots Croisés\n\n");
 		printf("Voici la liste des arguments acceptés par ce programme:\n");
 		printf("--aide (-a ou -?)  affiche ce texte, puis quitte\n");
+		printf("--deboguer (-d)    démarre le programme en mode débogage\n");
 		printf("--version (-v)     affiche la version du programme, puis quitte\n");
 		printf("\nCe programme est normalement démarré sans arguments et il n'est pas nécessaire de le démarrer depuis un terminal.\n");
 		exit(0);
@@ -42,6 +55,30 @@ void gestion_arguments (char arg[])
 	
 	else if (!strcmp(arg, "-v") || !strcmp(arg, "--version"))
 	{printf("CMC - Créateur de Mots Croisés\n---\nVersion %s \"%s\"\n", VERSION, NOM_VERSION); exit(0);}
+	
+	else if (!strcmp(arg, "-d") || !strcmp(arg, "--deboguer") || !strcmp(arg, "--debug"))
+	{
+		ferreur = fopen(nom_ferreur, "a+");
+		
+		if (debogage != true)
+		{
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Mode débogage", "Mode débogage activé.\nN'oubliez pas de consulter votre terminal et le fichier d'erreurs (erreurs.txt).", NULL);
+			fprintf(ferreur, "\n== Activation du mode débogage ==\nDémarrage de l'application...\n");
+			fprintf(ferreur, "version=CMC %s \"%s\"\n\n", VERSION, NOM_VERSION);
+			fprintf(ferreur, "Versions SDL:\n");
+			afficher_versions_SDL(ferreur);
+			debogage = true;
+		}
+		
+		fprintf(ferreur, "\npolice=%s\nicones (modif. titre, taille police, changer or.): [1]=%s   [2]=%s   [3]=%s\n", nom_police_principale, fichier_symbole_modifier, fichier_symbole_taille_police, fichier_symbole_orientation);
+		fprintf(ferreur, "tailles_polices (principale, petite, grille, nombres): [1]=%d   [2]=%d   [3]=%d   [4]=%d\n", taille_police_principale, taille_petite_police, taille_police_grille, taille_police_nbre_grille);
+		fprintf(ferreur, "taille_fenêtre (XxY): minimale=%dx%d   défaut=%dx%d   actuelle=%dx%d\n", LARGEUR_MIN, HAUTEUR_MIN, largeur_fenetre, hauteur_fenetre, xmax, ymax);
+		fprintf(ferreur, "marges=débrouille-toi... (calculées au redessinage)\n");
+		fprintf(ferreur, "sélection (X, Y)=(%d, %d)   focus (X, Y)=(%d, %d)   => -1 = aucune sélection\norientation=%d   => 0 = Hor. / 1 = Ver.\n", selection_x, selection_y, focus_x, focus_y, orientation);
+		fprintf(ferreur, "\nErreur(s) SDL: %s\n", SDL_GetError());
+		
+		fclose(ferreur);
+	}
 	
 	else
 	{erreur(11, "Argument non reconnu.\nEntrez \"./cmc --aide\" pour en savoir plus."); printf("\"%s\" n'est pas un argument accepté par ce programme.\n", arg);}
@@ -156,14 +193,47 @@ void init ()
 }
 
 
-void afficher_menu (enum zones_menu)
+void afficher_menu (enum zones_menu zone)
 //Affiche le menu principal dans la fenêtre de l'application.
 //Reçoit la position du curseur en paramètre.
 {
 	SDL_SetColor(fond, rend);
 	SDL_RenderClear(rend);
 	
-	//...
+	TTF_SetFontStyle(police, TTF_STYLE_BOLD);
+	afficher_txt_centre("Menu Principal", 0, xmax, 10, police, couleur_texte, rend);
+	TTF_SetFontStyle(police, TTF_STYLE_NORMAL);
+	
+	if (zone == creer)
+	{rect_arrondi(xmax / 2 - 150, 100, 300, 100, couleur_selection, fond, rend);}
+	else
+	{rect_arrondi(xmax / 2 - 150, 100, 300, 100, couleur_boutons, fond, rend);}
+	afficher_txt_centre("Créer une nouvelle grille", xmax / 2 - 150, xmax / 2 + 150, 140, police, couleur_texte, rend);
+	
+	if (zone == jouer)
+	{rect_arrondi(xmax / 2 - 150, 230, 300, 100, couleur_selection, fond, rend);}
+	else
+	{rect_arrondi(xmax / 2 - 150, 230, 300, 100, couleur_boutons, fond, rend);}
+	afficher_txt_centre("Jouer aux mots croisés", xmax / 2 - 150, xmax / 2 + 150, 255, police, couleur_texte, rend);
+	afficher_txt_centre("(charger une grille)", xmax / 2 - 150, xmax / 2 + 150, 285, police, couleur_texte, rend);
+	
+	SDL_SetColor(couleur_texte, rend);
+	SDL_RenderDrawLine(rend, xmax / 2 - 150, 360, xmax / 2 + 150, 360);
+	
+	if (zone == aide)
+	{rect_arrondi(xmax / 2 - 150, 390, 300, 50, couleur_selection, fond, rend);}
+	else
+	{rect_arrondi(xmax / 2 - 150, 390, 300, 50, couleur_boutons, fond, rend);}
+	afficher_txt_centre("Ouvrir le module d'aide", xmax / 2 - 150, xmax / 2 + 150, 405, police, couleur_texte, rend);
+	
+	if (zone == reglages)
+	{rect_arrondi(xmax / 2 - 150, 470, 300, 50, couleur_selection, fond, rend);}
+	else
+	{rect_arrondi(xmax / 2 - 150, 470, 300, 50, couleur_boutons, fond, rend);}
+	afficher_txt_centre("Accéder aux réglages", xmax / 2 - 150, xmax / 2 + 150, 485, police, couleur_texte, rend);
+	
+	afficher_txt("CMC Version", xmax - 175, ymax - 25, 200, police, couleur_texte, rend);
+	afficher_txt(VERSION, xmax - 40, ymax - 25, 40, police, couleur_texte, rend);
 	
 	SDL_RenderPresent(rend);
 }
@@ -211,21 +281,58 @@ void menu ()
 				SDL_ShowMessageBox(&popup_quitter, &choix);
 				if (choix)
 				{quitter();}
+				afficher_menu(0);
 				break;
 			
-			//...
+			case SDLK_RETURN:
+			case SDLK_KP_ENTER:
+			case SDLK_TAB:
+			case SDLK_UP:
+			case SDLK_DOWN:
+			case SDLK_LEFT:
+			case SDLK_RIGHT:
+				SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Clavier non-supporté", "Vous ne pouvez pas utiliser le clavier pour sélectionner un bouton dans ce menu.", fenetre);
+				break;
 			}
 			break;
 		
 		case SDL_MOUSEMOTION:
-			//...
+			if (ev.motion.x >= xmax / 2 - 150 && ev.motion.x <= xmax / 2 + 150)
+			{
+				if (ev.motion.y >= 100 && ev.motion.y <= 200)
+				{afficher_menu(creer);}
+				
+				else if (ev.motion.y >= 230 && ev.motion.y <= 330)
+				{afficher_menu(jouer);}
+				
+				else if (ev.motion.y >= 390 && ev.motion.y <= 440)
+				{afficher_menu(aide);}
+				
+				else if (ev.motion.y >= 470 && ev.motion.y <= 520)
+				{afficher_menu(reglages);}
+				
+				else
+				{afficher_menu(0);}
+			}
+			else
+			{afficher_menu(0);}
 			break;
 		
 		case SDL_MOUSEBUTTONDOWN:
-			//...
-			//Temporaire:
-			nouvelle_grille();
-			afficher_menu(0);
+			if (ev.button.x >= xmax / 2 - 150 && ev.button.x <= xmax / 2 + 150)
+			{
+				if (ev.button.y >= 100 && ev.button.y <= 200) //nouvelle grille
+				{nouvelle_grille(); afficher_menu(0);}
+				
+				else if (ev.button.y >= 230 && ev.button.y <= 330) //jouer
+				{partie(); afficher_menu(0);}
+				
+				else if (ev.button.y >= 390 && ev.button.y <= 440) //aide
+				{/*...*/ afficher_menu(0);}
+				
+				else if (ev.button.y >= 470 && ev.button.y <= 520) //réglages
+				{/*...*/ afficher_menu(0);}
+			}
 			break;
 		}
 	}
@@ -235,21 +342,10 @@ void menu ()
 void quitter ()
 //Ferme l'interface graphique SDL et libère la mémoire nécessaire.
 {
-	if (grille != NULL)
-	{
-		for (int compteur = 0; compteur < nbre_cases; compteur++)
-		{free(grille[compteur]);}
-		free(grille);
-	}
+	FILE* ferreur; //pour l'option de débogage...
 	
-	if (mots != NULL)
-	{
-		while (mots->suiv != NULL)
-		{mots = mots->suiv;}
-		while (mots->prec != NULL)
-		{mots = mots->prec; free(mots->suiv);}
-		free(mots);
-	}
+	
+	liberer_memoire();
 	
 	if (symbole_modifier != NULL)
 	{SDL_DestroyTexture(symbole_modifier);}
@@ -270,6 +366,13 @@ void quitter ()
 	
 	TTF_Quit();
 	SDL_Quit();
+	
+	if (debogage)
+	{
+		ferreur = fopen(nom_ferreur, "a+");
+		fprintf(ferreur, "\nFermeture du programme...\nBon débogage!\n\n");
+		fclose(ferreur);
+	}
 	
 	exit(0);
 }

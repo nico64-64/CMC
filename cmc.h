@@ -6,16 +6,16 @@
 #include <SDL2/SDL_image.h>
 
 
-#define VERSION "0.1" //numéro "officiel"
-#define NOM_VERSION "ROCS ACÉRÉS" //surnom amusant =)
+#define VERSION "0.2" //numéro "officiel"
+#define NOM_VERSION "MINE AIGUISÉE" //surnom amusant =)
 
 //Dimensions minimales de la fenêtre:
 #define LARGEUR_MIN	800 //largeur minimale de la fenêtre
 #define HAUTEUR_MIN	600 //hauteur minimale de la fenêtre
 
 //Définitions facilitant la lisibilité du code:
-#define VERTICAL	true
-#define HORIZONTAL	false
+#define VERTICAL	1
+#define HORIZONTAL	0
 
 
 //Structure d'une case de la grille de mots croisés:
@@ -24,6 +24,7 @@ struct _case
 	bool vide; //indique si la case doit rester vide
 	char solution[3]; //lettre qui va dans cette case (0 = aucune lettre)
 	char essai[3]; //lettre entrée par le joueur (0 = aucune lettre)
+	char validation; //indique si la réponse entrée par le joueur est la bonne (0 = ne s'applique pas, 'v' = valide, 'i' = invalide)
 };
 
 //Structure d'un mot inscrit dans la grille de mots croisés:
@@ -50,6 +51,8 @@ enum zones
 	terminer,
 	mod_orientation,
 	mod_taille_police,
+	verification,
+	verification_finale,
 	
 	//création:
 	nouv_grille = 100, //position inconnue
@@ -59,14 +62,16 @@ enum zones
 	nouv_identifier,
 	nouv_terminer,
 	nouv_mod_orientation,
-	nouv_mod_taille_police,
+	nouv_mod_taille_police
 };
 
 enum zones_menu
 {
 	//0 = indéterminé
 	creer = 1,
-	jouer
+	jouer,
+	aide,
+	reglages
 };
 
 
@@ -96,6 +101,8 @@ SDL_Color couleur_boutons = gris_pale; //boutons cliquables
 SDL_Color couleur_focus = bleu_efface; //focus souris (hovering)
 SDL_Color couleur_selection = bleu; //sélection clavier ou clic de souris
 SDL_Color couleur_ombre = gris_pale; //ombrage pour le reste du mot sur la grille
+SDL_Color couleur_valide = vert_pale; //case ayant la bonne lettre
+SDL_Color couleur_invalide = orange_fonce; //case n'ayant pas la bonne lettre
 
 //Valeurs modifiables:
 int largeur_fenetre = 900; //valeur par défaut
@@ -120,9 +127,12 @@ int focus_y = 0; //indique la coordonnée y ayant en ce moment le focus souris
 int selection_x = -1; //indique la coordonnée x qui est sélectionnée en ce moment (via clavier ou clic de souris)
 int selection_y = -1; //indique la coordonnée y qui est sélectionnée en ce moment (via clavier ou clic de souris)
 bool orientation = HORIZONTAL; //indique l'orientation actuelle dans la grille
+int delai_validation_mot = 1500; //délai (en ms) pendant lequel la validation du mot est visible à l'écran
 
-//Symboles:
-bool errlog = 1;
+//Gestion des erreurs et débogage:
+bool debogage = false;
+bool errlog = true;
+char nom_ferreur[30] = "erreurs.txt";
 
 //Grille:
 struct _case** grille = NULL; //ptr vers un array 2D symbolisant la grille de mots croisés
@@ -162,9 +172,13 @@ SDL_MessageBoxButtonData boutons_oui_non[2] =
 #define longueur_txt(txt, longueur_max, police)							afficher_txt(txt, 0, 0, longueur_max, police, transparent, NULL)
 #define longueur_txt_centre(txt, x_gauche, x_droite, police)			afficher_txt_centre(txt, x_gauche, x_droite, 0, police, transparent, NULL)
 
+//Macro de débogage (dompe l'état des variables dans ferreur):
+#define debug()															gestion_arguments("--deboguer")
+
 
 //Liste des fonctions (en ordre alphabétique et classées par fichier):
 //cmc.c:
+void afficher_menu(enum zones_menu zone);
 void erreur(int code, char msg[]);
 void gestion_arguments(char arg[]);
 void init();
@@ -176,13 +190,19 @@ void identifier_mot();
 void nouvelle_grille();
 bool sauvegarder_grille();
 //jeu.c:
+bool ouvrir_grille(char nom[]);
+void partie();
 void rafraichir(enum zones zone);
+void verifier_grille();
+void verifier_mot();
 //backend.c:
+void afficher_versions_SDL(FILE* ferreur);
 int afficher_txt(char txt[], int x, int y, int longueur_max, TTF_Font* police, SDL_Color couleur, SDL_Renderer* renderer);
 int afficher_txt_centre(char txt[], int x_gauche, int x_droite, int y, TTF_Font* police, SDL_Color couleur, SDL_Renderer* renderer);
 int demander_nbre(char titre_recu[], char explications[], int valeur_initiale, SDL_Window* fenetre_source);
 bool demander_txt(char titre_recu[], char explications[], char input[], int max, SDL_Window* fenetre_source);
 char* enlever_majuscule(char string[]);
+void liberer_memoire();
 void rectangle(int x, int y, int largeur, int hauteur, int epaisseur, SDL_Color couleur, SDL_Color fond, SDL_Renderer* renderer);
 void simuler_mvm_souris();
 void tronquer(char txt[]);

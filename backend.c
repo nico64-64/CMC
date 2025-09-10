@@ -3,6 +3,42 @@
 //Plusieurs fonctions de ce fichier sont extraites du projet "Minesweeper".
 
 
+void liberer_memoire ()
+//Libère toute la mémoire utilisée pour créer/utiliser une grille (et tout le tralala qui vient avec) et réinitialise les variables nécessaires.
+{
+	if (debogage)
+	{printf("Grille réinitialisée... ");}
+	
+	if (grille != NULL)
+	{
+		for (int compteur = 0; compteur < nbre_cases; compteur++)
+		{free(grille[compteur]);}
+		free(grille);
+		
+		if (debogage)
+		{printf("Mémoire libérée.\n");}
+	}
+	else if (debogage)
+	{printf("Aucune mémoire à libérer.\n");}
+	
+	if (mots != NULL)
+	{
+		while (mots->suiv != NULL)
+		{mots = mots->suiv;}
+		while (mots->prec != NULL)
+		{mots = mots->prec; free(mots->suiv);}
+		free(mots);
+	}
+	
+	grille = NULL;
+	mots = NULL;
+	nbre_mots = 0;
+	selection_x = -1;
+	selection_y = -1;
+	orientation = HORIZONTAL;
+}
+
+
 void tronquer (char txt[])
 //Enlève le dernier caractère d'une string (reçue en paramètre et modifiée directement à la source vu qu'une string est un array qui est en fait un pointeur...).
 {
@@ -21,6 +57,19 @@ char* enlever_majuscule (char string[])
 	for (int compteur = 0; string[compteur] != '\0'; compteur++)
 	{string[compteur] = tolower(string[compteur]);}
 	return string;
+}
+
+
+_Bool est_un_nbre(char input[])
+//Renvoie 1 si "input" est un nombre et 0 si ce n'en est pas un.
+{
+	for (int compteur = 0; input[compteur] != '\000'; compteur++)
+	{
+		if (input[compteur] != '0' && input[compteur] != '1' && input[compteur] != '2' && input[compteur] != '3' && input[compteur] != '4' && input[compteur] != '5' && input[compteur] != '6' \
+			&& input[compteur] != '7' && input[compteur] != '8' && input[compteur] != '9')
+		{return 0;}
+	}
+	return 1;
 }
 
 
@@ -332,7 +381,7 @@ bool demander_txt (char titre_recu[], char explications[], char input[], int max
 		
 		case SDL_TEXTINPUT:
 			focus = 'i';
-			if (strlen(input) < max - 1)
+			if (strlen(input) < (unsigned) max - 1) //le cast en unsigned supprime un warning de -Wextra selon lequel on compare 2 choses de signage différent
 			{strcat(input, ev.text.text);}
 			break;
 		}
@@ -352,13 +401,13 @@ bool demander_txt (char titre_recu[], char explications[], char input[], int max
 		{strcpy(input, ancien_input);}
 	}
 	
+	SDL_SetCursor(curseur_normal);
 	return (bool) termine;
 }
 
 
 int demander_nbre (char titre_recu[], char explications[], int valeur_initiale, SDL_Window* fenetre_source)
 //Créé une nouvelle fenêtre de style "pop-up" pour demander un nombre à l'utilisateur
-//Noter que les valeurs maximales
 //Renvoie la valeur reçue en input (maximum 99 999, minimum -99 999).
 //Renvoie -6699 en cas d'erreur.
 /* Paramètres:	- titre_recu = titre de la fenêtre (maximum 200 caractères)
@@ -617,4 +666,23 @@ int demander_nbre (char titre_recu[], char explications[], int valeur_initiale, 
 	if (!termine)
 	{return -6699;}
 	return input;
+}
+
+
+void afficher_versions_SDL (FILE* ferreur)
+//Affiche les versions des différentes librairies SDL utilisées par ce programme.
+//Appelé lors du démarrage en mode débogage seulement.
+{
+	SDL_version version_SDL;
+	
+	SDL_VERSION(&version_SDL);
+	fprintf(ferreur, "Version de SDL utilisée à la compilation: %d.%d.%d\n", version_SDL.major, version_SDL.minor, version_SDL.patch);
+	SDL_GetVersion(&version_SDL);
+	fprintf(ferreur, "Version de SDL liée au programme: %d.%d.%d\n", version_SDL.major, version_SDL.minor, version_SDL.patch);
+	TTF_VERSION(&version_SDL);
+	fprintf(ferreur, "Version de SDL_ttf utilisée à la compilation: %d.%d.%d\n", version_SDL.major, version_SDL.minor, version_SDL.patch);
+	version_SDL = *TTF_Linked_Version();
+	fprintf(ferreur, "Version de SDL_ttf liée au programme: %d.%d.%d\n", version_SDL.major, version_SDL.minor, version_SDL.patch);
+	SDL_IMAGE_VERSION(&version_SDL);
+	fprintf(ferreur, "Version de SDL_image utilisée à la compilation: %d.%d.%d\n\n", version_SDL.major, version_SDL.minor, version_SDL.patch);
 }
