@@ -452,9 +452,7 @@ void partie()
 			{verifier_mot();}
 			else if (ev.motion.x >= marge_gauche + 330 && ev.motion.x <= marge_gauche + 380 && ev.motion.y >= marge_bas && ev.motion.y <= marge_bas + 40) //agrandir/rapetisser la police
 			{
-				buffint = demander_nbre("Modifier la taille de la police", \
-				"Vous pouvez ajuster ici la taille de la police utilisée dans la grille.\nCela est très utile lorsqu'une \"petite\" grille est visualisée dans une grande fenêtre (ou l'inverse!).\nLa taille par défaut est de 30 pts.", \
-				taille_police_grille, fenetre);
+				buffint = demander_nbre("Modifier la taille de la police", "Vous pouvez ajuster ici la taille de la police utilisée dans la grille.\nNotez que la taille des numéros et lettres indiquant le début des mots sera aussi modifiée en conséquence.\nCela est très utile lorsqu'une \"petite\" grille est visualisée dans une grande fenêtre (ou l'inverse!).\nLa taille par défaut est de 30 pts.", taille_police_grille, fenetre);
 				if (buffint > 0 && buffint < 70)
 				{
 					taille_police_grille = buffint;
@@ -633,6 +631,11 @@ bool ouvrir_grille(char nom[])
 	int compte_tours = 0; //compte le nombre d'entrées dans la légende ou la grille ont été faits jusqu'à maintenant (débogage seulement)
 	struct mot* buffer_mot = NULL; //buffer servant à ajouter un nouveau mot à la légende
 	
+	if (buffint < 4)
+	{
+		erreur(22, "Le nom du fichier est trop court.\nIl est présentement impossible d'ouvrir un fichier de moins de 4 caractères.\nDe toute façon, vous devriez enregistrer vos grilles dans le dossier ./grilles/ (et n'oubliez pas de d'écrire ce chemin d'accès ici).");
+		return 0;
+	}
 	
 	if (nom[buffint - 4] != '.' || nom[buffint - 3] != 't' || nom[buffint - 2] != 'x' || nom[buffint - 1] != 't')
 	{strcat(nom, ".txt");}

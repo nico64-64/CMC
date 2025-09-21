@@ -126,7 +126,7 @@ int afficher_txt (char txt[], int x, int y, int longueur_max, TTF_Font* police, 
 int afficher_txt_centre (char txt[], int x_gauche, int x_droite, int y, TTF_Font* police, SDL_Color couleur, SDL_Renderer* renderer)
 //Affiche du texte à l'écran en le centrant entre deux valeurs de x.
 //Renvoie la longueur du texte affiché.
-//ATTENTION: Le centrage ne fonctionne pas si le texte est sur plus d'une ligne!
+//ATTENTION /!\ : Cette fonction NE DOIT PAS être utilisée si le texte a plus d'une ligne!
 /* Paramètres: 	- txt = texte à afficher
 				- x_gauche, x_droite = limites gauche et droite de l'endroit où sera affiché le texte
 				- y = hauteur du texte (le haut du texte)
@@ -134,15 +134,17 @@ int afficher_txt_centre (char txt[], int x_gauche, int x_droite, int y, TTF_Font
 				- couleur = la couleur du texte
 				- renderer = le renderer à utiliser ou NULL si on ne veut pas afficher le texte */
 {
+	int longueur;
+	int hauteur; //inutilisé
+	
 	if (police == NULL || txt[0] == '\000')
 	{return 0;}
 	
-	SDL_Surface* surface = TTF_RenderUTF8_Blended_Wrapped(police, txt, transparent, x_droite - x_gauche);
-	int longueur = surface->w;
+	if (TTF_SizeUTF8(police, txt, &longueur, &hauteur) != 0) //Cette fonction calcule la longueur d'une ligne de texte beaucoup plus rapidement que comment je le fais dans afficher_txt, vu qu'elle ne crée pas de surface ni de texture.
+	{return 0;}
 	
 	afficher_txt(txt, x_gauche + (x_droite - x_gauche - longueur) / 2, y, x_droite - x_gauche, police, couleur, renderer);
 	
-	SDL_FreeSurface(surface);
 	return longueur;
 }
 
@@ -244,10 +246,10 @@ bool demander_txt (char titre_recu[], char explications[], char input[], int max
 	
 	//Recopie de strings:
 	strcat(titre_fenetre, titre_recu);
-	if (input[0] == '\000')
+	if (!strcmp(input, ""))
 	{ancien_input[0] = '\000';}
 	else
-	{strcpy(ancien_input, input);}
+	{sprintf(ancien_input, "%s", input);}
 	
 	//Création de la fenêtre:
 	fenetre_d = SDL_CreateWindow(titre_fenetre, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 650, 400, 0); //fenêtre centrée et non resizeable
@@ -278,7 +280,7 @@ bool demander_txt (char titre_recu[], char explications[], char input[], int max
 		TTF_SetFontStyle(police, TTF_STYLE_NORMAL);
 		
 		//Affichage des instructions:
-		afficher_txt(explications, 30, 50, 590, petite_police, couleur_texte, rend_d);
+		afficher_txt(explications, 30, 45, 590, petite_police, couleur_texte, rend_d);
 		
 		//Affichage de la boîte d'input:
 		rectangle(30, 260, 590, 40, 0, couleur_boutons, fond, rend_d);
@@ -456,7 +458,7 @@ int demander_nbre (char titre_recu[], char explications[], int valeur_initiale, 
 		TTF_SetFontStyle(police, TTF_STYLE_NORMAL);
 		
 		//Affichage des instructions:
-		afficher_txt(explications, 30, 50, 590, petite_police, couleur_texte, rend_d);
+		afficher_txt(explications, 30, 45, 590, petite_police, couleur_texte, rend_d);
 		
 		//Affichage de la boîte d'input (incluant le + et le -):
 		rectangle(30, 260, 180, 40, 0, couleur_boutons, fond, rend_d);

@@ -289,9 +289,7 @@ void nouvelle_grille ()
 			{identifier_mot();}
 			else if (ev.motion.x >= marge_gauche + 330 && ev.motion.x <= marge_gauche + 380 && ev.motion.y >= marge_bas && ev.motion.y <= marge_bas + 40) //agrandir/rapetisser la police
 			{
-				buffint = demander_nbre("Modifier la taille de la police", \
-				"Vous pouvez ajuster ici la taille de la police utilisée dans la grille.\nCela est très utile lorsqu'une \"petite\" grille est visualisée dans une grande fenêtre (ou l'inverse!).\nLa taille par défaut est de 30 pts.", \
-				taille_police_grille, fenetre);
+				buffint = demander_nbre("Modifier la taille de la police", "Vous pouvez ajuster ici la taille de la police utilisée dans la grille.\nNotez que la taille des numéros et lettres indiquant le début des mots sera aussi modifiée en conséquence.\nCela est très utile lorsqu'une \"petite\" grille est visualisée dans une grande fenêtre (ou l'inverse!).\nLa taille par défaut est de 30 pts.", taille_police_grille, fenetre);
 				if (buffint > 0 && buffint < 70)
 				{
 					taille_police_grille = buffint;

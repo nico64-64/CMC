@@ -1,9 +1,9 @@
-#include "creation.c"
+#include "reglages.c"
 
 
 void erreur (int code, char msg[])
 //Log et/ou affiche un message d'erreur.
-//Les codes d'erreurs inférieurs à 100 sont considéré très importants, tandis que les codes supérieurs à 100 seront souvent ignorés.
+//Les codes d'erreurs inférieurs à 100 sont considéré importants, tandis que les codes supérieurs à 100 seront souvent ignorés.
 //Les codes de 1 à 10 sont considérés fatal.
 //Les messages d'erreurs doivent contenir moins de 300 caractères et les codes d'erreur doivent être supérieurs à 0.
 {
@@ -25,13 +25,19 @@ void erreur (int code, char msg[])
 	{
 		ferreur = fopen(nom_ferreur, "a+");
 		
-		if (code >= 100)
-		{sprintf(message, "Erreur %d.\n%s", code, msg);}
-		fprintf(ferreur, "\n%s\n", message);
-		if (code <= 10)
-		{fprintf(ferreur, "== ERREUR FATALE ==\nDémarrez le programme depuis un terminal avec l'option \"-d\" (\"-?\" pour plus d'informations) pour déboguer le programme.\nIl est conseillé de d'abord supprimer ce fichier.\n\n");}
+		if (ferreur == NULL)
+		{SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "CMC - Erreur", "Erreur 23.\nImpossible d'ouvrir le fichier de log d'erreurs.\n\nOuch!\nUne erreur dans le processus de gestion des erreurs...", fenetre);}
 		
-		fclose(ferreur);
+		else
+		{
+			if (code >= 100)
+			{sprintf(message, "Erreur %d.\n%s", code, msg);}
+			fprintf(ferreur, "\n%s\n", message);
+			if (code <= 10)
+			{fprintf(ferreur, "== ERREUR FATALE ==\nDémarrez le programme depuis un terminal avec l'option \"-d\" (\"-?\" pour plus d'informations) pour déboguer le programme.\nIl est conseillé de d'abord supprimer ce fichier.\n\n");}
+			
+			fclose(ferreur);
+		}
 	}
 }
 
@@ -40,16 +46,20 @@ void gestion_arguments (char arg[])
 //Gère les arguments reçus par l'application à son ouverture.
 {
 	FILE* ferreur; //pour l'option de débogage
+	char buffer[50]; //pour l'ouverture d'une grille
 	
 	
 	if (!strcmp(arg, "-?") || !strcmp(arg, "-a") || !strcmp(arg, "-h") || !strcmp(arg, "--aide") || !strcmp(arg, "--help"))
 	{
 		printf("CMC\nCréateur de Mots Croisés\n\n");
 		printf("Voici la liste des arguments acceptés par ce programme:\n");
-		printf("--aide (-a ou -?)  affiche ce texte, puis quitte\n");
-		printf("--deboguer (-d)    démarre le programme en mode débogage\n");
-		printf("--version (-v)     affiche la version du programme, puis quitte\n");
-		printf("\nCe programme est normalement démarré sans arguments et il n'est pas nécessaire de le démarrer depuis un terminal.\n");
+		printf("--aide (-a ou -?)               affiche ce texte, puis quitte\n");
+		printf("--deboguer (-d)                 démarre le programme en mode débogage\n");
+		printf("--grille=./chemin/vers/fichier  démarre le programme en ouvrant dès le début une certaine grille, qui pourra être utilisée ou modifiée directement\n");
+		printf("--fconfig=./chemin/vers/fichier démarre le programme en utilisant le fichier fourni comme fichier de réglages (Attention: Option potentiellement dangereuse!)\n");
+		printf("--version (-v)                  affiche la version du programme, puis quitte\n");
+		printf("\nL'ordre des arguments n'a pas d'importance, mais certains arguments ne sont pas comptibles.\n");
+		printf("Ce programme est normalement démarré sans arguments et il n'est pas nécessaire de le démarrer depuis un terminal.\n");
 		exit(0);
 	}
 	
@@ -80,6 +90,53 @@ void gestion_arguments (char arg[])
 		fclose(ferreur);
 	}
 	
+	else if (strlen(arg) >= 8 && arg[0] == '-' && arg[1] == '-' && arg[2] == 'g' && arg[3] == 'r' && arg[4] == 'i' && arg[5] == 'l' && arg[6] == 'l' && arg[7] == 'e' && arg[8] == '=')
+	//--grille=chemin/vers/grille
+	{
+		if (arg[9] == '\000')
+		{printf("Veuillez saisir le nom et le chemin d'accès à la grille en \"escapant\" les espaces.\nLe \".txt\" final est optionnel.\nExemple: ./cmc --grille=./grilles/Grille\\ sans\\ titre.txt\n"); exit(0);}
+		
+		if (grille != NULL)
+		{liberer_memoire(); erreur(22, "Impossible d'ouvrir plus d'une grille à la fois.\nSeule la dernière grille sera utilisée.");}
+		
+		for (unsigned compteur = 0; arg[compteur + 9] != '\000' && compteur < sizeof(buffer) - 1; compteur++)
+		{buffer[compteur] = arg[compteur + 9]; buffer[compteur + 1] = '\000';}
+		
+		if (!ouvrir_grille(buffer))
+		{erreur(21, "Impossible d'ouvrir la grille spécifiée en argument.\nAssurez-vous d'écrire le chemin d'accès au fichier et d'\"escaper\" les espaces.\nLe \".txt\" final est optionnel."); exit(21);}
+	}
+	
+	else if (strlen(arg) >= 8 && arg[0] == '-' && arg[1] == '-' && arg[2] == 'f' && arg[3] == 'c' && arg[4] == 'o' && arg[5] == 'n' && arg[6] == 'f' && arg[7] == 'i' && arg[8] == 'g' && arg[9] == '=')
+	//--fconfig=chemin/vers/fconfig
+	{
+		if (arg[10] == '\000')
+		{
+			printf("Veuillez saisir le nom et le chemin d'accès au fichier de réglages en \"escapant\" les espaces.\nN'oubliez pas le \".txt\" final.\n/!\\ ATTENTION: Un mauvais chemin d'accès pourrait briser votre système!\n");
+			exit(0);
+		}
+		
+		for (unsigned compteur = 0; arg[compteur + 10] != '\000' && compteur < sizeof(nom_fconfig) - 1; compteur++)
+		{nom_fconfig[compteur] = arg[compteur + 10]; nom_fconfig[compteur + 1] = '\000';}
+		
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Option potentiellement dangereuse", "L'option \"--fconfig=...\" peut être dangereuse pour votre système si vous avez entré le mauvais chemin d'accès.\nSVP l'utiliser avec précaution.\n\n", fenetre);
+	}
+	
+	else if (strlen(arg) >= 8 && arg[0] == '-' && arg[1] == '-' && arg[2] == 'f' && arg[3] == 'e' && arg[4] == 'r' && arg[5] == 'r' && arg[6] == 'e' && arg[7] == 'u' && arg[8] == 'r' && arg[9] == '=')
+	//--ferreur=chemin/vers/ferreur
+	{
+		if (arg[10] == '\000')
+		{
+			printf("Veuillez saisir le nom et le chemin d'accès au fichier de log d'erreurs en \"escapant\" les espaces.\nN'oubliez pas le \".txt\" final.\n/!\\ ATTENTION: Un mauvais chemin d'accès pourrait briser votre système!\n");
+			exit(0);
+		}
+		
+		for (unsigned compteur = 0; arg[compteur + 10] != '\000' && compteur < sizeof(nom_ferreur) - 1; compteur++)
+		{nom_ferreur[compteur] = arg[compteur + 10]; nom_ferreur[compteur + 1] = '\000';}
+		
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "CMC - Option dangereuse", "L'option \"--ferreur=\" est dangereuse pour votre système!\nLe programme ne vérifie rien avant de créer son fichier de log d'erreurs et pourrait donc effacer des fichiers importants ou en créer un au mauvais endroit si vous entrez un chemin d'accès erroné.", fenetre);
+		printf("L'option \"--ferreur\" peut être dangereuse pour votre système.\nSVP l'utiliser avec précaution.\n\n");
+	}
+	
 	else
 	{erreur(11, "Argument non reconnu.\nEntrez \"./cmc --aide\" pour en savoir plus."); printf("\"%s\" n'est pas un argument accepté par ce programme.\n", arg);}
 }
@@ -90,6 +147,9 @@ int main (int argc, char* argv[])
 	//Gestion des arguments reçus par le programme:
 	for (int num_arg = 1; num_arg < argc; num_arg++)
 	{gestion_arguments(argv[num_arg]);}
+	
+	//Lecture des réglages du fichier des réglages:
+	lire_reglages();
 	
 	//Création de l'interface graphique:
 	init();
@@ -220,13 +280,13 @@ void afficher_menu (enum zones_menu zone)
 	SDL_SetColor(couleur_texte, rend);
 	SDL_RenderDrawLine(rend, xmax / 2 - 150, 360, xmax / 2 + 150, 360);
 	
-	if (zone == aide)
+	if (zone == ouvrir_aide)
 	{rect_arrondi(xmax / 2 - 150, 390, 300, 50, couleur_selection, fond, rend);}
 	else
 	{rect_arrondi(xmax / 2 - 150, 390, 300, 50, couleur_boutons, fond, rend);}
 	afficher_txt_centre("Ouvrir le module d'aide", xmax / 2 - 150, xmax / 2 + 150, 405, police, couleur_texte, rend);
 	
-	if (zone == reglages)
+	if (zone == ouvrir_reglages)
 	{rect_arrondi(xmax / 2 - 150, 470, 300, 50, couleur_selection, fond, rend);}
 	else
 	{rect_arrondi(xmax / 2 - 150, 470, 300, 50, couleur_boutons, fond, rend);}
@@ -306,10 +366,10 @@ void menu ()
 				{afficher_menu(jouer);}
 				
 				else if (ev.motion.y >= 390 && ev.motion.y <= 440)
-				{afficher_menu(aide);}
+				{afficher_menu(ouvrir_aide);}
 				
 				else if (ev.motion.y >= 470 && ev.motion.y <= 520)
-				{afficher_menu(reglages);}
+				{afficher_menu(ouvrir_reglages);}
 				
 				else
 				{afficher_menu(0);}
@@ -331,7 +391,7 @@ void menu ()
 				{/*...*/ afficher_menu(0);}
 				
 				else if (ev.button.y >= 470 && ev.button.y <= 520) //réglages
-				{/*...*/ afficher_menu(0);}
+				{reglages(); afficher_menu(0);}
 			}
 			break;
 		}

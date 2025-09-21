@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 
 
-#define VERSION "0.2" //numéro "officiel"
-#define NOM_VERSION "MINE AIGUISÉE" //surnom amusant =)
+#define VERSION "0.3.1" //numéro "officiel"
+#define NOM_VERSION "PENSÉE AFFUTÉE" //surnom amusant =)
 
 //Dimensions minimales de la fenêtre:
 #define LARGEUR_MIN	800 //largeur minimale de la fenêtre
@@ -70,8 +71,8 @@ enum zones_menu
 	//0 = indéterminé
 	creer = 1,
 	jouer,
-	aide,
-	reglages
+	ouvrir_aide,
+	ouvrir_reglages
 };
 
 
@@ -128,6 +129,7 @@ int selection_x = -1; //indique la coordonnée x qui est sélectionnée en ce mo
 int selection_y = -1; //indique la coordonnée y qui est sélectionnée en ce moment (via clavier ou clic de souris)
 bool orientation = HORIZONTAL; //indique l'orientation actuelle dans la grille
 int delai_validation_mot = 1500; //délai (en ms) pendant lequel la validation du mot est visible à l'écran
+char nom_fconfig[40] = "./source/reglages.txt";
 
 //Gestion des erreurs et débogage:
 bool debogage = false;
@@ -185,6 +187,13 @@ void init();
 int main(int argc, char* argv[]);
 void menu();
 void quitter();
+//reglages.c:
+void appliquer_reglages();
+void enregistrer_reglages();
+bool lire_reglages();
+void rafraichir_reglages(char zone);
+void reglages();
+void reinitialiser_reglages();
 //creation.c:
 void identifier_mot();
 void nouvelle_grille();
