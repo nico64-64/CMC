@@ -316,6 +316,17 @@ void menu ()
 		NULL
 	};
 	
+	SDL_MessageBoxData popup_reglages_bloques =
+	{
+		SDL_MESSAGEBOX_INFORMATION,
+		fenetre,
+		"CMC - Réglages bloqués",
+		"Il semblerait que vous ayiez édité le fichier de réglage de l'application et que vous y ayiez bloqué les réglages (en y écrivant quelque chose comme \"modification_manuelle = 1\").\nSi vous voulez vraiment modifier vos réglages ici, votre fichier de réglage actuel sera d'abord supprimé.\nVoulez-vous vraiment continuer?",
+		2,
+		boutons_oui_non,
+		NULL
+	};
+	
 	
 	afficher_menu(0);
 	
@@ -388,10 +399,20 @@ void menu ()
 				{partie(); afficher_menu(0);}
 				
 				else if (ev.button.y >= 390 && ev.button.y <= 440) //aide
-				{/*...*/ afficher_menu(0);}
+				{/*aide...*/ afficher_menu(0);}
 				
 				else if (ev.button.y >= 470 && ev.button.y <= 520) //réglages
-				{reglages(); afficher_menu(0);}
+				{
+					if (reglages_bloques)
+					{
+						SDL_ShowMessageBox(&popup_reglages_bloques, &choix);
+						if (choix)
+						{reinitialiser_reglages();}
+					}
+					else
+					{reglages();}
+					afficher_menu(0);
+				}
 			}
 			break;
 		}

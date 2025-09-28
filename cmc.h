@@ -2,12 +2,13 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 
 
-#define VERSION "0.3.1" //numéro "officiel"
+#define VERSION "0.3.2" //numéro "officiel"
 #define NOM_VERSION "PENSÉE AFFUTÉE" //surnom amusant =)
 
 //Dimensions minimales de la fenêtre:
@@ -129,11 +130,13 @@ int selection_x = -1; //indique la coordonnée x qui est sélectionnée en ce mo
 int selection_y = -1; //indique la coordonnée y qui est sélectionnée en ce moment (via clavier ou clic de souris)
 bool orientation = HORIZONTAL; //indique l'orientation actuelle dans la grille
 int delai_validation_mot = 1500; //délai (en ms) pendant lequel la validation du mot est visible à l'écran
-char nom_fconfig[40] = "./source/reglages.txt";
+char nom_fconfig[40] = "./source/reglages.txt"; //nom et chemin d'accès au fichier de sauvegarde des réglages
+char color_picker[150] = "zenity --color-selection"; //commande du color-picker
 
-//Gestion des erreurs et débogage:
-bool debogage = false;
-bool errlog = true;
+//Gestion des erreurs, débogage, etc.:
+bool reglages_bloques = false; //impossible de modifier les réglages dans l'application (édition manuelle de fconfig seulement)
+bool debogage = false; //mode débogage
+bool errlog = true; //log les erreurs dans ferreur
 char nom_ferreur[30] = "erreurs.txt";
 
 //Grille:
@@ -208,9 +211,11 @@ void verifier_mot();
 void afficher_versions_SDL(FILE* ferreur);
 int afficher_txt(char txt[], int x, int y, int longueur_max, TTF_Font* police, SDL_Color couleur, SDL_Renderer* renderer);
 int afficher_txt_centre(char txt[], int x_gauche, int x_droite, int y, TTF_Font* police, SDL_Color couleur, SDL_Renderer* renderer);
+bool demander_couleur(char nom_couleur[], SDL_Color* couleur, SDL_Window* fenetre_source);
 int demander_nbre(char titre_recu[], char explications[], int valeur_initiale, SDL_Window* fenetre_source);
 bool demander_txt(char titre_recu[], char explications[], char input[], int max, SDL_Window* fenetre_source);
 char* enlever_majuscule(char string[]);
+void extraire_rgba(char src[], char r[], char g[], char b[], char a[]);
 void liberer_memoire();
 void rectangle(int x, int y, int largeur, int hauteur, int epaisseur, SDL_Color couleur, SDL_Color fond, SDL_Renderer* renderer);
 void simuler_mvm_souris();
