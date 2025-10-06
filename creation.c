@@ -61,6 +61,7 @@ void nouvelle_grille ()
 	{
 		//Reset de la grille actuelle (devrait déjà être fait, mais au cas où...):
 		liberer_memoire();
+		strcpy(titre, "Grille sans titre");
 		
 		//Demande la taille de la nouvelle grille:
 		nbre_cases = demander_nbre("Taille de la grille", "Entrez la taille (nombre de cases par ligne/colonne) de la grille à créer.\nLes grilles doivent présentement toujours être carrées.\nCe nombre doit être supérieur à 0 et en choisir un trop élevé pourrait rendre la grille inutilisable.", nbre_cases, fenetre);

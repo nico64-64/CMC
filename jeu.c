@@ -39,7 +39,7 @@ void rafraichir(enum zones zone)
 	
 	//Titre et son bouton d'édition:
 	TTF_SetFontStyle(police, TTF_STYLE_UNDERLINE);
-	afficher_txt_centre(titre, 0, xmax, 5, police, noir, rend);
+	afficher_txt_centre(titre, 0, xmax, 5, police, couleur_texte, rend);
 	TTF_SetFontStyle(police, TTF_STYLE_NORMAL);
 	if (zone >= nouv_grille)
 	{
@@ -89,7 +89,7 @@ void rafraichir(enum zones zone)
 	{rectangle(marge_gauche + largeur_case * selection_x, 40 + largeur_case * selection_y, largeur_case, largeur_case, 0, couleur_selection, fond, rend);}
 	
 	//Grille:
-	rectangle(marge_gauche, 40, largeur_grille, largeur_grille, 5, noir, fond, rend);
+	rectangle(marge_gauche, 40, largeur_grille, largeur_grille, 5, couleur_grille, fond, rend);
 	SDL_SetColor(couleur_grille, rend);
 	for (int compteur = 1; compteur < nbre_cases; compteur++)
 	{
@@ -130,8 +130,8 @@ void rafraichir(enum zones zone)
 	
 	//Légende:
 	TTF_SetFontStyle(police, TTF_STYLE_UNDERLINE);
-	afficher_txt("Horizontalement:", marge_droite, 40, xmax - marge_droite - 20, police, noir, rend);
-	afficher_txt("Verticalement:", marge_droite, 300, xmax - marge_droite - 20, police, noir, rend);
+	afficher_txt("Horizontalement:", marge_droite, 40, xmax - marge_droite - 20, police, couleur_texte, rend);
+	afficher_txt("Verticalement:", marge_droite, 300, xmax - marge_droite - 20, police, couleur_texte, rend);
 	TTF_SetFontStyle(police, TTF_STYLE_NORMAL);
 	
 	if (mots != NULL)
@@ -217,7 +217,8 @@ void rafraichir(enum zones zone)
 		afficher_txt_centre("\"Enter\" pour continuer", marge_gauche + 540, xmax - 30, marge_bas + 10, petite_police, couleur_texte, rend);
 	}
 	
-	SDL_RenderPresent(rend);
+	if (!ne_pas_afficher)
+	{SDL_RenderPresent(rend);}
 }
 
 

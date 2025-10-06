@@ -507,7 +507,7 @@ int demander_nbre (char titre_recu[], char explications[], int valeur_initiale, 
 		else if (ev.motion.x >= 168 && ev.motion.x <= 208 && ev.motion.y >= 260 && ev.motion.y <= 300)
 		{rectangle(168, 260, 40, 40, 0, couleur_focus, fond, rend_d);}
 		rectangle(30, 260, 180, 40, 4, couleur_texte, fond, rend_d);
-		SDL_SetColor(noir, rend_d);
+		SDL_SetColor(couleur_texte, rend_d);
 		SDL_RenderDrawLine(rend_d, 69, 260, 69, 300);
 		SDL_RenderDrawLine(rend_d, 70, 260, 70, 300);
 		SDL_RenderDrawLine(rend_d, 71, 260, 71, 300);

@@ -399,7 +399,7 @@ void menu ()
 				{partie(); afficher_menu(0);}
 				
 				else if (ev.button.y >= 390 && ev.button.y <= 440) //aide
-				{/*aide...*/ afficher_menu(0);}
+				{aide(); afficher_menu(0);}
 				
 				else if (ev.button.y >= 470 && ev.button.y <= 520) //réglages
 				{

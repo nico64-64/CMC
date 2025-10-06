@@ -8,8 +8,8 @@
 #include <SDL2/SDL_image.h>
 
 
-#define VERSION "0.3.2" //numéro "officiel"
-#define NOM_VERSION "PENSÉE AFFUTÉE" //surnom amusant =)
+#define VERSION "0.4" //numéro "officiel"
+#define NOM_VERSION "LETTRES DÉFORMÉES" //surnom amusant =)
 
 //Dimensions minimales de la fenêtre:
 #define LARGEUR_MIN	800 //largeur minimale de la fenêtre
@@ -107,31 +107,32 @@ SDL_Color couleur_valide = vert_pale; //case ayant la bonne lettre
 SDL_Color couleur_invalide = orange_fonce; //case n'ayant pas la bonne lettre
 
 //Valeurs modifiables:
-int largeur_fenetre = 900; //valeur par défaut
-int hauteur_fenetre = 700; //valeur par défaut
-int xmax = 900; //valeur variable
-int ymax = 700; //valeur variable
-int marge_gauche; //coordonnée x où commence la grille
-int marge_droite; //coordonnée x 20 pixels à droite de la grille (où commencent les boutons)
-int marge_bas; //coordonnée y 20 pixels en bas de la grille (où commencent les boutons)  /!\ Vaut zéro s'il manque de place en bas /!\ .
-int largeur_grille; //largeur (et hauteur) de la grille
-int largeur_case; //largeur (et hauteur) d'une case de la grille
+int  largeur_fenetre = 900; //valeur par défaut
+int  hauteur_fenetre = 700; //valeur par défaut
+int  xmax = 900; //valeur variable
+int  ymax = 700; //valeur variable
+int  marge_gauche; //coordonnée x où commence la grille
+int  marge_droite; //coordonnée x 20 pixels à droite de la grille (où commencent les boutons)
+int  marge_bas; //coordonnée y 20 pixels en bas de la grille (où commencent les boutons)  /!\ Vaut zéro s'il manque de place en bas /!\ .
+int  largeur_grille; //largeur (et hauteur) de la grille
+int  largeur_case; //largeur (et hauteur) d'une case de la grille
 char nom_police_principale[40] = "./source/dejavu_sans.ttf";
-int taille_police_principale = 20;
-int taille_petite_police = 18;
-int taille_police_grille = 30;
-int taille_police_nbre_grille = 20;
+int  taille_police_principale = 20;
+int  taille_petite_police = 18;
+int  taille_police_grille = 30;
+int  taille_police_nbre_grille = 20;
 char fichier_symbole_modifier[40] = "./source/edit.png";
 char fichier_symbole_taille_police[40] = "./source/taille_police.png";
 char fichier_symbole_orientation[40] = "./source/orientation.png";
-int focus_x = 0; //indique la coordonnée x ayant en ce moment le focus souris
-int focus_y = 0; //indique la coordonnée y ayant en ce moment le focus souris
-int selection_x = -1; //indique la coordonnée x qui est sélectionnée en ce moment (via clavier ou clic de souris)
-int selection_y = -1; //indique la coordonnée y qui est sélectionnée en ce moment (via clavier ou clic de souris)
+int  focus_x = 0; //indique la coordonnée x ayant en ce moment le focus souris
+int  focus_y = 0; //indique la coordonnée y ayant en ce moment le focus souris
+int  selection_x = -1; //indique la coordonnée x qui est sélectionnée en ce moment (via clavier ou clic de souris)
+int  selection_y = -1; //indique la coordonnée y qui est sélectionnée en ce moment (via clavier ou clic de souris)
 bool orientation = HORIZONTAL; //indique l'orientation actuelle dans la grille
-int delai_validation_mot = 1500; //délai (en ms) pendant lequel la validation du mot est visible à l'écran
+int  delai_validation_mot = 1500; //délai (en ms) pendant lequel la validation du mot est visible à l'écran
 char nom_fconfig[40] = "./source/reglages.txt"; //nom et chemin d'accès au fichier de sauvegarde des réglages
 char color_picker[150] = "zenity --color-selection"; //commande du color-picker
+bool ne_pas_afficher = false; //indique aux fonction d'affichage de ne pas renderer à l'écran (utilisé par les fonctions d'aide)
 
 //Gestion des erreurs, débogage, etc.:
 bool reglages_bloques = false; //impossible de modifier les réglages dans l'application (édition manuelle de fconfig seulement)
@@ -197,6 +198,10 @@ bool lire_reglages();
 void rafraichir_reglages(char zone);
 void reglages();
 void reinitialiser_reglages();
+//aide.c:
+void aide();
+void aide_creation();
+void aide_jeu();
 //creation.c:
 void identifier_mot();
 void nouvelle_grille();
