@@ -373,8 +373,8 @@ void enregistrer_reglages ()
 	if (debogage)
 	{printf("Fichier de config créé (en %s).\n", nom_fconfig);}
 	
-	fprintf(fconfig, "* Fichier de configuration (réglages) de l'éditeur de mots croisés CMC.\n* \"cmc --aide\" pour plus de détails.\n*\n");
-	fprintf(fconfig, "* Ce fichier est généré automatiquement et son contenu est normalement effacé et remplacé à chaque ouverture des réglages de l'application.\n* Modifiez à vos risques et périls.\n\n");
+	fprintf(fconfig, "* Fichier de configuration (réglages) de l'éditeur de mots croisés CMC.\n* \"./cmc --aide\" pour plus de détails.\n*\n");
+	fprintf(fconfig, "* Ce fichier est généré automatiquement et son contenu est normalement effacé et remplacé à chaque ouverture des réglages de l'application.\n* Modifiez à vos risques et périls.\n*\n");
 	fprintf(fconfig, "* Si vous voulez être sûr(e) que l'application ne modifiera pas ce fichier, vous pouvez ajouter une ligne avec le paramètre \"modification_manuelle = 1\" (sans les guillemets).\n");
 	fprintf(fconfig, "* L'ordre des paramètres n'a pas d'importance.\n");
 	fprintf(fconfig, "* Toute ligne précédée d'un * séparé du texte par un espace sera ignorée par le programme.\n* Si vous supprimez un paramètre du fichier, sa valeur par défaut sera utilisée.\n");

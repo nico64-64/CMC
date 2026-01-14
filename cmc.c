@@ -60,6 +60,7 @@ void gestion_arguments (char arg[])
 		printf("--version (-v)                  affiche la version du programme, puis quitte\n");
 		printf("\nL'ordre des arguments n'a pas d'importance, mais certains arguments ne sont pas comptibles.\n");
 		printf("Ce programme est normalement démarré sans arguments et il n'est pas nécessaire de le démarrer depuis un terminal.\n");
+		printf("Si vous voulez créer une entrée de bureau (.desktop) sur Linux, utilisez le script \"run.sh\" plutôt que cet exécutable.\n");
 		exit(0);
 	}
 	
@@ -246,7 +247,7 @@ void init ()
 	if (symbole_orientation == NULL)
 	{sprintf(buffer, "Erreur lors du chargement du symbole de changement d'orientation: %s\nLe dossier \"source\" a-t-il été altéré?", SDL_GetError()); erreur(12, buffer);}
 	
-	//Remplissage en fond:
+	//Remplissage du fond:
 	SDL_SetColor(fond, rend);
 	SDL_RenderClear(rend);
 	SDL_RenderPresent(rend);
@@ -321,7 +322,7 @@ void menu ()
 		SDL_MESSAGEBOX_INFORMATION,
 		fenetre,
 		"CMC - Réglages bloqués",
-		"Il semblerait que vous ayiez édité le fichier de réglage de l'application et que vous y ayiez bloqué les réglages (en y écrivant quelque chose comme \"modification_manuelle = 1\").\nSi vous voulez vraiment modifier vos réglages ici, votre fichier de réglage actuel sera d'abord supprimé.\nVoulez-vous vraiment continuer?",
+		"Il semblerait que vous ayiez édité le fichier de réglage de l'application et que vous y ayiez bloqué les réglages\n(en y écrivant quelque chose comme \"modification_manuelle = 1\").\nSi vous voulez vraiment modifier vos réglages ici, votre fichier de réglage actuel sera d'abord supprimé.\nVoulez-vous vraiment continuer?",
 		2,
 		boutons_oui_non,
 		NULL

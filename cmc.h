@@ -9,6 +9,7 @@
 
 
 #define VERSION "0.4" //numéro "officiel"
+//En fait, ça aurait aussi bien pu être la version 1.0...
 #define NOM_VERSION "LETTRES DÉFORMÉES" //surnom amusant =)
 
 //Dimensions minimales de la fenêtre:
