@@ -1,0 +1,38 @@
+# demo.txt.txt
+
+# Sauvegarde d'une grille de mots croisés créée par CMC (programme Créateur de Mots Croisés).
+# Toutes les lignes commençant par un "#" seront ignorées par le programme.
+# Modifiez ce fichier à vos risques et périls.
+
+
+Dimensions: 10  # nombre de cases (les grilles sont toujours carrées)
+Nombre de mots: 5
+
+Légende:
+# Syntaxe pour un mot: [ mot, x (position horizontale), y (position verticale), orientation (0/1 = Horizontal/Vertical), nombre de caractères (nombre de cases occupées), légende (description du mot) ]
+# La position du mot est celle de son premier caractère. Les valeurs de x et y vont de 0 au nombre de cases - 1.
+[ pomme, 0, 0, 0, 5, fruit dûr et sucré ],
+[ ail, 7, 1, 0, 3, légume anti-vampire ],
+[ mangue, 0, 2, 0, 6, fruit exotique ],
+[ poire, 3, 4, 0, 5, fruit à forme spéciale ],
+[ feve, 6, 7, 0, 4, Souvent appelé bean ],
+[ persil, 2, 9, 0, 6, Fine herbe ],
+[ orange, 1, 0, 1, 6, On en tire du bon jus ],
+[ patate, 3, 4, 1, 6, Bon contre le scorbut ],
+[ cerise, 5, 1, 1, 6, souvent sur le gateau ],
+[ asperge, 7, 1, 1, 7, légume le plus long ],
+[ sauge, 9, 3, 1, 5, fine herbe odorante ]
+
+Grille:
+# Syntaxe pour une case: [ vide (0/1), solution (caractère) ]
+# Les cases doivent être disposées comme doit l'être la grille
+[ 0, p ] [ 0, o ] [ 0, m ] [ 0, m ] [ 0, e ] [ 1,  ] [ 1,  ] [ 1,  ] [ 1,  ] [ 1,  ] 
+[ 1,  ] [ 0, r ] [ 1,  ] [ 1,  ] [ 1,  ] [ 0, c ] [ 1,  ] [ 0, a ] [ 0, i ] [ 0, l ] 
+[ 0, m ] [ 0, a ] [ 0, n ] [ 0, g ] [ 0, u ] [ 0, e ] [ 1,  ] [ 0, s ] [ 1,  ] [ 1,  ] 
+[ 1,  ] [ 0, n ] [ 1,  ] [ 1,  ] [ 1,  ] [ 0, r ] [ 1,  ] [ 0, p ] [ 1,  ] [ 0, s ] 
+[ 1,  ] [ 0, g ] [ 1,  ] [ 0, p ] [ 0, o ] [ 0, i ] [ 0, r ] [ 0, e ] [ 1,  ] [ 0, a ] 
+[ 1,  ] [ 0, e ] [ 1,  ] [ 0, a ] [ 1,  ] [ 0, s ] [ 1,  ] [ 0, r ] [ 1,  ] [ 0, u ] 
+[ 1,  ] [ 1,  ] [ 1,  ] [ 0, t ] [ 1,  ] [ 0, e ] [ 1,  ] [ 0, g ] [ 1,  ] [ 0, g ] 
+[ 1,  ] [ 1,  ] [ 1,  ] [ 0, a ] [ 1,  ] [ 1,  ] [ 0, f ] [ 0, e ] [ 0, v ] [ 0, e ] 
+[ 1,  ] [ 1,  ] [ 1,  ] [ 0, t ] [ 1,  ] [ 1,  ] [ 1,  ] [ 1,  ] [ 1,  ] [ 1,  ] 
+[ 1,  ] [ 1,  ] [ 0, p ] [ 0, e ] [ 0, r ] [ 0, s ] [ 0, i ] [ 0, l ] [ 1,  ] [ 1,  ] 

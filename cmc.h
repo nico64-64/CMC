@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
