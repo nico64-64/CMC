@@ -1,4 +1,4 @@
-# demo.txt.txt
+# demo.txt
 
 # Sauvegarde d'une grille de mots croisés créée par CMC (programme Créateur de Mots Croisés).
 # Toutes les lignes commençant par un "#" seront ignorées par le programme.
@@ -6,7 +6,7 @@
 
 
 Dimensions: 10  # nombre de cases (les grilles sont toujours carrées)
-Nombre de mots: 5
+Nombre de mots: 11
 
 Légende:
 # Syntaxe pour un mot: [ mot, x (position horizontale), y (position verticale), orientation (0/1 = Horizontal/Vertical), nombre de caractères (nombre de cases occupées), légende (description du mot) ]
@@ -15,10 +15,10 @@ Légende:
 [ ail, 7, 1, 0, 3, légume anti-vampire ],
 [ mangue, 0, 2, 0, 6, fruit exotique ],
 [ poire, 3, 4, 0, 5, fruit à forme spéciale ],
-[ feve, 6, 7, 0, 4, Souvent appelé bean ],
-[ persil, 2, 9, 0, 6, Fine herbe ],
-[ orange, 1, 0, 1, 6, On en tire du bon jus ],
-[ patate, 3, 4, 1, 6, Bon contre le scorbut ],
+[ feve, 6, 7, 0, 4, souvent appelé bean ],
+[ persil, 2, 9, 0, 6, fine herbe ],
+[ orange, 1, 0, 1, 6, on en tire du bon jus ],
+[ patate, 3, 4, 1, 6, bon contre le scorbut ],
 [ cerise, 5, 1, 1, 6, souvent sur le gateau ],
 [ asperge, 7, 1, 1, 7, légume le plus long ],
 [ sauge, 9, 3, 1, 5, fine herbe odorante ]
